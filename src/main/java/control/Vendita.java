@@ -3,7 +3,6 @@ package control;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -45,65 +44,58 @@ public class Vendita extends HttpServlet {
 		ProductBean product = new ProductBean();
 		product.setEmail((String) request.getSession().getAttribute("email"));
 		
-		 String UPLOAD_DIRECTORY = request.getServletContext().getRealPath("/")+"img/productIMG/";
-		    //process only if its multipart content
-		    if(ServletFileUpload.isMultipartContent(request)) {
-		        try {
-		            List<FileItem> multiparts = new ServletFileUpload(
-		                                     new DiskFileItemFactory()).parseRequest(new ServletRequestContext(request));
+		String UPLOAD_DIRECTORY = request.getServletContext().getRealPath("/") + "img/productIMG/";
+		// process only if it's multipart content
+		if (ServletFileUpload.isMultipartContent(request)) {
+			try {
+				List<FileItem> multiparts = new ServletFileUpload(
+						new DiskFileItemFactory()).parseRequest(new ServletRequestContext(request));
 
-		            for(FileItem item : multiparts){
-		                if(!item.isFormField()){
-		                    String name = new File(item.getName()).getName();
-		                    item.write( new File(UPLOAD_DIRECTORY + File.separator + name));
-		                    product.setImmagine(name);
-		                }
-		                else {
-		                	if (item.getFieldName().compareTo("nome") == 0) {
-		                		product.setNome(item.getString());
-		                	}
-		                	else if (item.getFieldName().compareTo("prezzo") == 0) {
-		                		product.setPrezzo(Double.parseDouble(item.getString()));
-		                	}
-		                	else if (item.getFieldName().compareTo("spedizione") == 0) {
-		                		product.setSpedizione(Double.parseDouble(item.getString()));
-		                	}
-		                	else if (item.getFieldName().compareTo("tipologia") == 0) {
-		                		product.setTipologia(item.getString());
-		                	}
-							else if (item.getFieldName().compareTo("tag") == 0) {
-								product.setTag(item.getString());
-							}
-							else if (item.getFieldName().compareTo("descrizione") == 0) {
-		                		product.setDescrizione(item.getString());
-		                	}
-		                }
-		            }
+				for (FileItem item : multiparts) {
+					if (!item.isFormField()) {
+						String name = new File(item.getName()).getName();
+						item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
+						product.setImmagine(name);
+					} else {
+						if (item.getFieldName().compareTo("nome") == 0) {
+							product.setNome(XSSPrevention.escapeHtml(item.getString()));
+						} else if (item.getFieldName().compareTo("prezzo") == 0) {
+							product.setPrezzo(Double.parseDouble(item.getString()));
+						} else if (item.getFieldName().compareTo("spedizione") == 0) {
+							product.setSpedizione(Double.parseDouble(item.getString()));
+						} else if (item.getFieldName().compareTo("tipologia") == 0) {
+							product.setTipologia(XSSPrevention.escapeHtml(item.getString()));
+						} else if (item.getFieldName().compareTo("tag") == 0) {
+							product.setTag(XSSPrevention.escapeHtml(item.getString()));
+						} else if (item.getFieldName().compareTo("descrizione") == 0) {
+							product.setDescrizione(XSSPrevention.escapeHtml(item.getString()));
+						}
+					}
+				}
 
-		           //File uploaded successfully
-		           request.setAttribute("message", "File Uploaded Successfully");
-		           
-		        } catch (Exception ex) {
-		           
-		        }          
+				// File uploaded successfully
+				request.setAttribute("message", "File Uploaded Successfully");
 
-		    }
-		    else{
-		        request.setAttribute("message",
-		                             "Sorry this Servlet only handles file upload request");
-		       
-		    }
-		    ProductModel model = new ProductModel();
-		    try {
-				model.doSave(product);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (Exception ex) {
+				// Handle exception
+				ex.printStackTrace();
 			}
-		    request.getSession().setAttribute("refreshProduct", true);
-		    request.getRequestDispatcher("/index.jsp").forward(request, response);
+
+		} else {
+			request.setAttribute("message",
+					"Sorry this Servlet only handles file upload request");
+
 		}
-		    
+		ProductModel model = new ProductModel();
+		try {
+			model.doSave(product);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		request.getSession().setAttribute("refreshProduct", true);
+		request.getRequestDispatcher("/index.jsp").forward(request, response);
+	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
@@ -112,5 +104,4 @@ public class Vendita extends HttpServlet {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
-
 }
