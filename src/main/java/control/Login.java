@@ -99,18 +99,20 @@ public class Login extends HttpServlet {
 	}
 		
 	private String checkPsw(String psw) {
-		MessageDigest md = null;
-		try {
-			md = MessageDigest.getInstance("MD5");
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		byte[] messageDigest = md.digest(psw.getBytes());
-		BigInteger number = new BigInteger(1, messageDigest);
-		String hashtext = number.toString(16);
-		
-		return hashtext;
-	}
+	    try {
+	        MessageDigest md = MessageDigest.getInstance("SHA-256"); // Utilizzo SHA-256 anziché MD5 per maggiore sicurezza
+	        byte[] hashedBytes = md.digest(psw.getBytes());
 
+	        // Converte l'array di byte in una rappresentazione esadecimale
+	        StringBuilder stringBuilder = new StringBuilder();
+	        for (byte b : hashedBytes) {
+	            stringBuilder.append(String.format("%02x", b));
+	        }
+
+	        return stringBuilder.toString();
+	    } catch (NoSuchAlgorithmException e) {
+	        e.printStackTrace();
+	        return null; // Gestione dell'errore, potresti restituire un valore predefinito o gestire diversamente questa situazione
+	    }
+	}
 }

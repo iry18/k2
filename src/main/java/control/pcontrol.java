@@ -3,7 +3,9 @@ package control;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 @WebFilter("/pcontrol")
+
 public class pcontrol implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
